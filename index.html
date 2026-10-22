@@ -1,0 +1,652 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<title>Pantry Rounds</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column app — round switcher on top, "your cup" form, then the pantry list, team at the bottom. */
+:root {
+  --bg: #EEF1F5;
+  --surface: #FFFFFF;
+  --ink: #14213D;
+  --muted: #5B6577;
+  --line: #D9DFE7;
+  --accent: #D99A00;
+  --accent-ink: #14213D;
+  --accent-soft: #FFF1C7;
+  --ok: #1D7F55;
+  --ok-soft: #DDF3E8;
+  --warn: #A2461A;
+  --sw-coffee: #A0714F;
+  --sw-tea: #C98A4B;
+  --sw-black-coffee: #2B1B12;
+  --sw-black-tea: #8E3B1F;
+  --sw-green-tea: #8DAA3B;
+  --sw-milk: #FBF8F1;
+  --f-display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E131D; --surface: #161D2B; --ink: #E8ECF3; --muted: #9AA4B5; --line: #283245;
+    --accent: #F2B526; --accent-ink: #14213D; --accent-soft: #3A2E0E; --ok: #52C68F; --ok-soft: #12352A; --warn: #F08A5D;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E131D; --surface: #161D2B; --ink: #E8ECF3; --muted: #9AA4B5; --line: #283245;
+  --accent: #F2B526; --accent-ink: #14213D; --accent-soft: #3A2E0E; --ok: #52C68F; --ok-soft: #12352A; --warn: #F08A5D;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.app { max-width: 720px; margin: 0 auto; display: grid; gap: 20px; }
+h1, h2 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+h2 { font-size: 18px; font-weight: 600; }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type=text] {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 12px; width: 100%; min-width: 0;
+}
+
+header.top { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; justify-content: space-between; }
+.date { font-family: var(--f-mono); font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+.rounds { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; min-width: 260px; }
+.rounds button { border: 0; background: transparent; border-radius: 9px; padding: 8px 12px; text-align: left; display: grid; gap: 0; }
+.rounds button .t { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.rounds button .s { font-size: 12px; color: var(--muted); font-family: var(--f-mono); }
+.rounds button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
+.rounds button[aria-pressed=true] .s { color: var(--accent-ink); opacity: .75; }
+.count { font-family: var(--f-mono); font-size: 11px; background: var(--bg); color: var(--ink); border-radius: 99px; padding: 0 7px; line-height: 18px; }
+.rounds button[aria-pressed=true] .count { background: rgba(20,33,61,.15); color: var(--accent-ink); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+
+.who { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chip-btn { border: 1px solid var(--line); background: var(--bg); border-radius: 99px; padding: 6px 12px; font-size: 14px; font-weight: 500; }
+.chip-btn:hover { border-color: var(--muted); }
+.chip-btn[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.link { border: 0; background: none; padding: 0; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
+
+.drinks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 460px) { .drinks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.drink {
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px;
+  display: flex; gap: 10px; align-items: center; text-align: left; min-height: 64px;
+}
+.drink:hover { border-color: var(--muted); }
+.drink[aria-pressed=true] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.swatch { width: 28px; height: 28px; border-radius: 50%; flex: none; border: 2px solid var(--line); position: relative; }
+.swatch::after { content: ""; position: absolute; inset: 5px 6px auto auto; width: 6px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.35); }
+.drink .n { font-weight: 600; line-height: 1.2; }
+.drink .d { font-size: 12px; color: var(--muted); }
+
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 8px 14px; font-size: 14px; font-weight: 500; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed=true] { background: var(--ink); color: var(--surface); }
+.field-label { font-size: 13px; font-weight: 600; color: var(--muted); min-width: 52px; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.05); }
+a.btn { text-decoration: none; display: inline-block; }
+.btn.wa { background: #1FA855; border-color: #1FA855; color: #fff; }
+.btn.wa:hover { filter: brightness(1.05); }
+.btn.dark { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.status { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.status.ok { color: var(--ok); }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+.daily { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.daily .eyebrow { font-size: 11px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.called { background: var(--ok-soft); color: var(--ok); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-weight: 600; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; }
+.called .link { color: var(--ok); }
+
+.tally { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.tally-row { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.tally-row .swatch { width: 22px; height: 22px; margin-top: 2px; }
+.tally-row .swatch::after { display: none; }
+.tally-row .what { font-weight: 600; }
+.tally-row .names { font-size: 13px; color: var(--muted); }
+.tally-row .names .late { color: var(--warn); font-weight: 600; }
+.qty { font-family: var(--f-mono); font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.total { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; }
+.total .qty { font-size: 24px; }
+.pending { font-size: 13px; color: var(--muted); }
+.pending b { color: var(--ink); font-weight: 600; }
+
+.empty { border: 1.5px dashed var(--line); border-radius: 12px; padding: 18px; text-align: center; color: var(--muted); font-size: 14px; }
+
+.team-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.member { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 99px; padding: 4px 6px 4px 12px; font-size: 14px; background: var(--bg); }
+.member .x { border: 0; background: none; color: var(--muted); width: 24px; height: 24px; border-radius: 50%; line-height: 1; font-size: 16px; }
+.member .x:hover { background: var(--line); color: var(--ink); }
+.member.confirm { border-color: var(--warn); }
+.member .yes { border: 0; background: var(--warn); color: #fff; border-radius: 99px; font-size: 12px; padding: 2px 8px; font-weight: 600; }
+.add-form { display: flex; gap: 8px; }
+.add-form input { flex: 1; }
+
+.banner { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 12px; padding: 12px 14px; font-size: 14px; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 500; max-width: calc(100% - 32px); z-index: 20; }
+details summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+details summary::-webkit-details-marker { display: none; }
+details summary .chev { color: var(--muted); font-size: 13px; }
+details[open] summary { margin-bottom: 14px; }
+@media (prefers-reduced-motion: no-preference) { .drink, .btn, .chip-btn { transition: border-color .15s, background .15s; } }
+</style>
+
+</head><body>
+<div class="app">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Team tea &amp; coffee</div>
+      <h1>Pantry Rounds</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <div class="rounds" id="rounds" role="group" aria-label="Round"></div>
+  </header>
+
+  <div class="banner" id="offline" hidden>Could not connect to the database. Check firebase-config.js and your internet connection.</div>
+
+  <div class="banner" id="remind" hidden></div>
+
+  <section class="card" id="mine" aria-labelledby="mine-h"></section>
+
+  <section class="card" id="list" aria-labelledby="list-h"></section>
+
+  <section class="card">
+    <details id="team-details">
+      <summary><h2 id="team-h">Team</h2><span class="chev" id="team-count"></span></summary>
+      <div style="display:grid;gap:14px">
+        <div class="team-list" id="team-list"></div>
+        <form class="add-form" id="add-form" autocomplete="off">
+          <input type="text" id="add-name" placeholder="Add a name" maxlength="40" aria-label="Team member name">
+          <button class="btn dark" type="submit">Add</button>
+        </form>
+        <form class="add-form" id="wa-form" autocomplete="off" style="flex-wrap:wrap">
+          <label for="wa-num" class="field-label" style="width:100%">Send the list to WhatsApp number (with country code)</label>
+          <input type="text" id="wa-num" inputmode="tel" placeholder="e.g. 919876543210" maxlength="20">
+          <button class="btn dark" type="submit">Save</button>
+        </form>
+        <form class="add-form" id="wag-form" autocomplete="off" style="flex-wrap:wrap">
+          <label for="wa-group" class="field-label" style="width:100%">Or WhatsApp group invite link (used instead of the number)</label>
+          <input type="text" id="wa-group" inputmode="url" placeholder="https://chat.whatsapp.com/…" maxlength="120">
+          <button class="btn dark" type="submit">Save</button>
+        </form>
+      </div>
+    </details>
+  </section>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const DRINKS = [
+  { id: "coffee", label: "Coffee", sub: "with milk" },
+  { id: "tea", label: "Tea", sub: "with milk" },
+  { id: "black-coffee", label: "Black coffee", sub: "no milk" },
+  { id: "black-tea", label: "Black tea", sub: "no milk" },
+  { id: "green-tea", label: "Green tea", sub: "" },
+  { id: "milk", label: "Milk", sub: "hot" },
+];
+const SUGAR = [
+  { id: "none", label: "No sugar" },
+  { id: "less", label: "Less" },
+  { id: "normal", label: "Normal" },
+];
+const ROUNDS = [
+  { id: "morning", label: "Morning", time: "~11:00 AM" },
+  { id: "evening", label: "Evening", time: "~4:00 PM" },
+];
+const drinkOf = id => DRINKS.find(d => d.id === id);
+const sugarOf = id => SUGAR.find(s => s.id === id);
+
+const ls = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} },
+};
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const $ = id => document.getElementById(id);
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function fmtTime(ms) { return new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }); }
+
+const S = {
+  db: null,
+  ready: false,
+  readOnly: false,
+  date: todayKey(),
+  round: new Date().getHours() < 13 ? "morning" : "evening",
+  me: ls.get("pantry.me"),
+  switching: false,
+  team: [],
+  orders: [],
+  calls: {},
+  draft: { drink: null, sugar: "normal", note: "" },
+  dirty: false,
+  removing: null,
+  pruned: false,
+  waNumber: "",
+  makeDaily: false,
+  waGroup: "",
+};
+
+// Opens WhatsApp with the list typed in; pick the Pantry Group and tap Send. Also copied as a backup.
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-wa-group]"); if (!a) return;
+  const text = pantryText();
+  try { navigator.clipboard.writeText(text).then(() => toast("Pick your Pantry Group in WhatsApp and tap Send."), () => toast("Copy blocked. Use Copy list, then paste in the group.")); }
+  catch { toast("Copy blocked. Use Copy list, then paste in the group."); }
+});
+
+const memberName = id => (S.team.find(t => t.id === id) || {}).name || "Someone";
+const roundOrders = r => S.orders.filter(o => o.round === (r || S.round));
+const myOrder = () => roundOrders().find(o => o.member === S.me);
+const meInTeam = () => S.me && S.team.some(t => t.id === S.me);
+const standingOf = (mid, r) => (((S.team.find(t => t.id === mid) || {}).standing) || {})[r || S.round] || null;
+// Today's list = today's changes/skips, plus everyone's daily order where they made no change today.
+function effectiveOrders(r) {
+  r = r || S.round;
+  const today = S.orders.filter(o => o.round === r);
+  const has = new Set(today.map(o => o.member));
+  const out = [...today];
+  for (const t of S.team) {
+    const st = (t.standing || {})[r];
+    if (!has.has(t.id) && st && st.drink) out.push({ member: t.id, round: r, drink: st.drink, sugar: st.sugar || "normal", note: st.note || "", daily: true });
+  }
+  return out;
+}
+const sameOrder = (a, b) => a && b && a.drink === b.drink && (a.sugar || "normal") === (b.sugar || "normal") && (a.note || "") === (b.note || "");
+const describe = o => drinkOf(o.drink).label + ((o.sugar || "normal") === "normal" ? "" : o.sugar === "none" ? ", no sugar" : ", less sugar") + (o.note ? ` (${o.note})` : "");
+
+let toastT;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 2600);
+}
+function writeFailed(e) {
+  if (e && (e.code === "invalid_argument")) { S.readOnly = true; toast("You have view-only access to this page."); renderAll(); }
+  else if (e && e.code === "quota_exceeded") toast("Storage is full. Remove old team members or orders.");
+  else toast("Couldn't save. Check your connection and try again.");
+}
+
+/* ---------- rendering ---------- */
+function renderHeader() {
+  const d = new Date();
+  $("date").textContent = d.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  $("rounds").innerHTML = ROUNDS.map(r => {
+    const n = effectiveOrders(r.id).filter(o => o.drink !== "skip").length;
+    return `<button type="button" data-round="${r.id}" aria-pressed="${S.round === r.id}">
+      <span class="t">${r.label}${S.ready ? `<span class="count">${n}</span>` : ""}</span><span class="s">${r.time}</span></button>`;
+  }).join("");
+}
+
+function loadDraftFromSaved() {
+  const mine = myOrder();
+  const st = standingOf(S.me);
+  if (mine && mine.drink !== "skip") S.draft = { drink: mine.drink, sugar: mine.sugar || "normal", note: mine.note || "" };
+  else if (st) S.draft = { drink: st.drink, sugar: st.sugar || "normal", note: st.note || "" };
+  else S.draft = { drink: null, sugar: "normal", note: "" };
+  S.makeDaily = !st; // first order defaults to "every day"; once set, edits default to "today only"
+  S.dirty = false;
+}
+
+function renderMine() {
+  const el = $("mine");
+  const round = ROUNDS.find(r => r.id === S.round);
+  if (!S.ready) {
+    el.innerHTML = `<h2 id="mine-h">Your cup</h2><div class="empty">Loading today's orders…</div>`;
+    return;
+  }
+  if (!S.team.length) {
+    el.innerHTML = `<h2 id="mine-h">Your cup</h2>
+      <div class="empty">No one on the team list yet. Open <b>Team</b> below and add everyone's names, then pick yours here.</div>`;
+    return;
+  }
+  if (!meInTeam() || S.switching) {
+    el.innerHTML = `<div class="card-head"><h2 id="mine-h">Who are you?</h2>${meInTeam() ? `<button class="link" data-act="cancel-switch">Cancel</button>` : ""}</div>
+      <p class="muted" style="margin:0;font-size:14px">Tap your name once. This browser will remember you.</p>
+      <div class="who">${S.team.map(t => `<button class="chip-btn" data-pick="${esc(t.id)}" aria-pressed="${t.id === S.me}">${esc(t.name)}</button>`).join("")}</div>`;
+    return;
+  }
+  const mine = myOrder();
+  const st = standingOf(S.me);
+  const call = S.calls[S.round];
+  const rl = round.label.toLowerCase();
+  let status = "";
+  if (S.dirty) status = `<span class="status muted">Unsaved changes</span>`;
+  else if (mine && mine.drink === "skip") status = `<span class="status muted"><span class="dot"></span>You're skipping today</span>`;
+  else if (mine) status = `<span class="status ok"><span class="dot"></span>${st ? "Changed for today only" : "Today's order saved"} · ${fmtTime(mine.at)}</span>`;
+  else if (st) status = `<span class="status ok"><span class="dot"></span>Your daily order is in for today</span>`;
+  const saveLabel = S.makeDaily ? (st ? "Update daily order" : "Save as daily order") : st ? "Change for today only" : "Order for today only";
+
+  el.innerHTML = `
+    <div class="card-head">
+      <div><div class="eyebrow">${round.label} round</div><h2 id="mine-h">Your cup, ${esc(memberName(S.me))}</h2></div>
+      <button class="link" data-act="switch">Not you?</button>
+    </div>
+    ${st ? `<div class="daily"><span><span class="eyebrow">Daily ${rl} order</span><br><b>${esc(describe(st))}</b><span class="muted"> · counted every day automatically</span></span><button class="link" data-act="stop-daily" ${S.readOnly ? "disabled" : ""}>Stop daily order</button></div>`
+      : `<p class="muted" style="margin:0;font-size:14px">Set a daily order once and it's added to the list every day. Change it only on days you want something different.</p>`}
+    ${call ? `<div class="called" style="background:var(--accent-soft);color:var(--ink)">Pantry was already called at ${fmtTime(call.at)}. A new order now will be marked as late.</div>` : ""}
+    <div class="drinks" role="group" aria-label="Drink">
+      ${DRINKS.map(d => `<button type="button" class="drink" data-drink="${d.id}" aria-pressed="${S.draft.drink === d.id}">
+        <span class="swatch" style="background:var(--sw-${d.id})"></span>
+        <span><span class="n">${d.label}</span>${d.sub ? `<br><span class="d">${d.sub}</span>` : ""}</span></button>`).join("")}
+    </div>
+    <div class="row">
+      <span class="field-label">Sugar</span>
+      <div class="seg" role="group" aria-label="Sugar">${SUGAR.map(s => `<button type="button" data-sugar="${s.id}" aria-pressed="${S.draft.sugar === s.id}">${s.label}</button>`).join("")}</div>
+    </div>
+    <div class="row">
+      <span class="field-label">Note</span>
+      <input type="text" id="note" maxlength="60" placeholder="Optional, e.g. strong, half cup, extra hot" value="${esc(S.draft.note)}" style="flex:1">
+    </div>
+    <label class="check"><input type="checkbox" id="make-daily" ${S.makeDaily ? "checked" : ""}> Make this my daily ${rl} order</label>
+    <div class="actions">
+      <button class="btn primary" data-act="save" ${!S.draft.drink || S.readOnly ? "disabled" : ""}>${saveLabel}</button>
+      ${mine && st ? `<button class="btn" data-act="cancel-order" ${S.readOnly ? "disabled" : ""}>Back to daily order</button>`
+        : mine && mine.drink !== "skip" ? `<button class="btn" data-act="cancel-order" ${S.readOnly ? "disabled" : ""}>Cancel today's order</button>`
+        : !mine && st ? `<button class="btn" data-act="skip" ${S.readOnly ? "disabled" : ""}>Skip today</button>`
+        : !mine ? `<button class="btn" data-act="skip" ${S.readOnly ? "disabled" : ""}>Skip today</button>` : ""}
+      ${status}
+    </div>`;
+}
+
+function summaryGroups(list) {
+  const groups = new Map();
+  for (const o of list) {
+    if (o.drink === "skip" || !drinkOf(o.drink)) continue;
+    const key = o.drink + "|" + (o.sugar || "normal");
+    if (!groups.has(key)) groups.set(key, { drink: o.drink, sugar: o.sugar || "normal", people: [] });
+    groups.get(key).people.push(o);
+  }
+  return [...groups.values()].sort((a, b) =>
+    DRINKS.indexOf(drinkOf(a.drink)) - DRINKS.indexOf(drinkOf(b.drink)) || SUGAR.indexOf(sugarOf(a.sugar)) - SUGAR.indexOf(sugarOf(b.sugar)));
+}
+const groupLabel = g => drinkOf(g.drink).label + (g.drink === "milk" && g.sugar === "normal" ? "" : g.sugar === "normal" ? "" : ", " + (g.sugar === "none" ? "no sugar" : "less sugar"));
+
+function pantryText() {
+  const round = ROUNDS.find(r => r.id === S.round);
+  const groups = summaryGroups(effectiveOrders());
+  const d = new Date().toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" });
+  const lines = [`${round.label} round · ${d}`];
+  let total = 0;
+  for (const g of groups) {
+    total += g.people.length;
+    const notes = g.people.filter(p => p.note).map(p => p.note);
+    lines.push(`${groupLabel(g)} × ${g.people.length}${notes.length ? ` (${notes.join("; ")})` : ""}`);
+  }
+  lines.push(`Total: ${total}`);
+  return lines.join("\n");
+}
+
+function renderList() {
+  const el = $("list");
+  const round = ROUNDS.find(r => r.id === S.round);
+  if (!S.ready) { el.innerHTML = `<h2 id="list-h">Pantry list</h2><div class="empty">Loading…</div>`; return; }
+  const list = effectiveOrders();
+  const groups = summaryGroups(list);
+  const total = groups.reduce((n, g) => n + g.people.length, 0);
+  const replied = new Set(list.map(o => o.member));
+  const waiting = S.team.filter(t => !replied.has(t.id));
+  const skipped = list.filter(o => o.drink === "skip");
+  const call = S.calls[S.round];
+
+  el.innerHTML = `
+    <div class="card-head">
+      <div><div class="eyebrow">${round.label} round · for the pantry</div><h2 id="list-h">Pantry list</h2></div>
+      <div class="actions">
+        <button class="btn" data-act="copy" ${total ? "" : "disabled"}>Copy list</button>
+        ${!total ? `<button class="btn wa" disabled>Send to WhatsApp</button>`
+          : S.waGroup || !S.waNumber ? `<a class="btn wa" data-wa-group href="https://wa.me/?text=${encodeURIComponent(pantryText())}" target="_blank" rel="noopener">Send to Pantry Group</a>`
+          : `<a class="btn wa" href="https://wa.me/${S.waNumber}?text=${encodeURIComponent(pantryText())}" target="_blank" rel="noopener">Send to WhatsApp</a>`}
+        ${call ? "" : `<button class="btn dark" data-act="called" ${total && !S.readOnly ? "" : "disabled"}>Mark pantry called</button>`}
+      </div>
+    </div>
+    ${call ? `<div class="called"><span>Pantry called at ${fmtTime(call.at)}${call.by ? " by " + esc(memberName(call.by)) : ""}</span><button class="link" data-act="uncall" ${S.readOnly ? "disabled" : ""}>Undo</button></div>` : ""}
+    ${groups.length ? `<div class="tally">
+      ${groups.map(g => `<div class="tally-row">
+        <span class="swatch" style="background:var(--sw-${g.drink})"></span>
+        <div style="min-width:0"><div class="what">${esc(groupLabel(g))}</div>
+          <div class="names">${g.people.map(p => {
+            const late = call && p.at > call.at;
+            return `${esc(memberName(p.member))}${p.note ? " (" + esc(p.note) + ")" : ""}${late ? ' <span class="late">late</span>' : ""}`;
+          }).join(", ")}</div></div>
+        <span class="qty">${g.people.length}</span></div>`).join("")}
+    </div>
+    <div class="total"><span>Total cups</span><span class="qty">${total}</span></div>`
+    : `<div class="empty">No orders for the ${round.label.toLowerCase()} round yet.</div>`}
+    ${S.team.length ? `<div class="pending">${waiting.length ? `<b>Waiting on ${waiting.length}:</b> ${waiting.map(t => esc(t.name)).join(", ")}` : "<b>Everyone has replied.</b>"}${skipped.length ? `<br>Skipping: ${skipped.map(o => esc(memberName(o.member))).join(", ")}` : ""}</div>` : ""}`;
+}
+
+function renderTeam() {
+  $("team-count").textContent = S.team.length ? `${S.team.length} people ▾` : "Add names ▾";
+  $("team-list").innerHTML = S.team.length ? S.team.map(t => S.removing === t.id
+    ? `<span class="member confirm">Remove ${esc(t.name)}? <button class="yes" data-remove-yes="${esc(t.id)}">Remove</button><button class="x" data-remove-no aria-label="Keep">×</button></span>`
+    : `<span class="member">${esc(t.name)}${t.id === S.me ? " <span class='muted'>(you)</span>" : ""}<button class="x" data-remove="${esc(t.id)}" aria-label="Remove ${esc(t.name)}" ${S.readOnly ? "disabled" : ""}>×</button></span>`).join("")
+    : `<span class="muted" style="font-size:14px">No names yet. Add each person on your team once.</span>`;
+  $("add-form").querySelector("button").disabled = S.readOnly || !S.db;
+}
+
+// Reminder: from 15 min before to 30 min after each round's time (11:00, 16:00), until the pantry is marked called.
+const ROUND_AT = { morning: 11 * 60, evening: 16 * 60 };
+function renderRemind() {
+  const el = $("remind");
+  const now = new Date(); const m = now.getHours() * 60 + now.getMinutes();
+  const due = ROUNDS.find(r => m >= ROUND_AT[r.id] - 15 && m <= ROUND_AT[r.id] + 30 && !S.calls[r.id]);
+  if (!S.ready || !due) { el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<b>Time to send the ${due.label.toLowerCase()} pantry list.</b> Tap the green WhatsApp button below, send it, then mark the pantry called.`;
+}
+setInterval(renderRemind, 60000);
+
+function renderAll() { renderHeader(); renderRemind(); renderMine(); renderList(); renderTeam(); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", async e => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.round) {
+    if (S.round === t.dataset.round) return;
+    S.round = t.dataset.round; loadDraftFromSaved(); renderAll(); return;
+  }
+  if (t.dataset.pick) {
+    S.me = t.dataset.pick; ls.set("pantry.me", S.me); S.switching = false; loadDraftFromSaved(); renderAll(); return;
+  }
+  if (t.dataset.drink) { S.draft.drink = t.dataset.drink; S.dirty = true; renderMine(); return; }
+  if (t.dataset.sugar) { S.draft.sugar = t.dataset.sugar; S.dirty = true; renderMine(); return; }
+  if (t.dataset.remove) { S.removing = t.dataset.remove; renderTeam(); return; }
+  if ("removeNo" in t.dataset) { S.removing = null; renderTeam(); return; }
+  if (t.dataset.removeYes) {
+    const id = t.dataset.removeYes; S.removing = null;
+    try { await S.db.doc("team/" + id).delete(); if (id === S.me) { S.me = null; ls.set("pantry.me", null); } toast("Removed"); }
+    catch (err) { writeFailed(err); }
+    return;
+  }
+  const act = t.dataset.act; if (!act) return;
+  if (act === "switch") { S.switching = true; renderMine(); }
+  if (act === "cancel-switch") { S.switching = false; renderMine(); }
+  if (act === "save") saveOrder(S.draft.drink);
+  if (act === "skip") saveOrder("skip");
+  if (act === "cancel-order") {
+    const st = standingOf(S.me);
+    try {
+      await S.db.doc(`orders/${S.date}_${S.round}_${S.me}`).delete();
+      S.orders = S.orders.filter(o => !(o.round === S.round && o.member === S.me));
+      loadDraftFromSaved(); renderAll();
+      toast(st ? "Back to your daily order" : "Order cancelled");
+    } catch (err) { writeFailed(err); }
+  }
+  if (act === "stop-daily") {
+    try {
+      await S.db.doc("team/" + S.me).update({ ["standing." + S.round]: null });
+      S.team = S.team.map(t => t.id === S.me ? { ...t, standing: { ...(t.standing || {}), [S.round]: null } } : t);
+      S.makeDaily = false; renderAll();
+      toast("Daily order stopped. You'll need to order each day.");
+    } catch (err) { writeFailed(err); }
+  }
+  if (act === "copy") {
+    const text = pantryText();
+    try { await navigator.clipboard.writeText(text); toast("Copied. Paste it in WhatsApp or read it out to the pantry."); }
+    catch { toast("Copy blocked here. Select the list and copy it manually."); }
+  }
+  if (act === "called") {
+    try { await S.db.doc(`calls/${S.date}_${S.round}`).set({ date: S.date, round: S.round, at: Date.now(), by: meInTeam() ? S.me : null }); toast("Marked as called"); }
+    catch (err) { writeFailed(err); }
+  }
+  if (act === "uncall") {
+    try { await S.db.doc(`calls/${S.date}_${S.round}`).delete(); } catch (err) { writeFailed(err); }
+  }
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "make-daily") { S.makeDaily = e.target.checked; S.dirty = true; renderMine(); }
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "note") { S.draft.note = e.target.value; if (!S.dirty) { S.dirty = true; const st = document.querySelector("#mine .status"); if (st && myOrder()) { st.className = "status muted"; st.textContent = "Unsaved changes"; } } }
+});
+
+$("add-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = $("add-name"); const name = input.value.trim().replace(/\s+/g, " ");
+  if (!name || !S.db) return;
+  if (S.team.some(t => t.name.toLowerCase() === name.toLowerCase())) { toast(`${name} is already on the list`); return; }
+  try { await S.db.collection("team").add({ name, at: Date.now() }); input.value = ""; input.focus(); }
+  catch (err) { writeFailed(err); }
+});
+
+$("wa-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!S.db) return;
+  const number = $("wa-num").value.replace(/\D/g, "");
+  if (number && (number.length < 8 || number.length > 15)) { toast("Enter the full number with country code, digits only"); return; }
+  try { await S.db.doc("settings/whatsapp").set({ number, group: S.waGroup, at: Date.now() }); toast(number ? "WhatsApp number saved" : "Number cleared. The button will let you pick a chat."); }
+  catch (err) { writeFailed(err); }
+});
+
+$("wag-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (!S.db) return;
+  const raw = $("wa-group").value.trim();
+  const m = raw.match(/^(?:https?:\/\/)?chat\.whatsapp\.com\/([A-Za-z0-9]{10,40})/);
+  if (raw && !m) { toast("Paste a link like https://chat.whatsapp.com/…"); return; }
+  const group = m ? m[1] : "";
+  try { await S.db.doc("settings/whatsapp").set({ number: S.waNumber, group, at: Date.now() }); toast(group ? "Group link saved" : "Group link cleared"); }
+  catch (err) { writeFailed(err); }
+});
+
+let saving = false;
+async function saveOrder(drink) {
+  if (saving || !S.db || !meInTeam()) return;
+  saving = true;
+  const body = { date: S.date, round: S.round, member: S.me, drink, at: Date.now() };
+  if (drink !== "skip") { body.sugar = S.draft.sugar; body.note = S.draft.note.trim().slice(0, 60); }
+  const todayRef = S.db.doc(`orders/${S.date}_${S.round}_${S.me}`);
+  try {
+    if (drink !== "skip" && S.makeDaily) {
+      // Daily order lives on the person's team entry; today simply follows it.
+      const st = { drink, sugar: body.sugar, note: body.note };
+      await S.db.doc("team/" + S.me).update({ ["standing." + S.round]: st });
+      S.team = S.team.map(t => t.id === S.me ? { ...t, standing: { ...(t.standing || {}), [S.round]: st } } : t);
+      if (myOrder()) { await todayRef.delete(); S.orders = S.orders.filter(o => !(o.round === S.round && o.member === S.me)); }
+      toast("Saved as your daily order. It's added every day automatically.");
+    } else {
+      const st = standingOf(S.me);
+      if (drink !== "skip" && st && sameOrder(st, body)) {
+        if (myOrder()) { await todayRef.delete(); S.orders = S.orders.filter(o => !(o.round === S.round && o.member === S.me)); }
+        toast("Same as your daily order");
+      } else {
+        await todayRef.set(body);
+        toast(drink === "skip" ? "Skipping today" : st ? "Changed for today only" : "Order placed for today");
+      }
+      pruneMine();
+    }
+    loadDraftFromSaved();
+  } catch (err) { writeFailed(err); }
+  saving = false;
+  renderMine();
+}
+
+// Keep the store small: when you order, your own orders older than 30 days are cleared.
+async function pruneMine() {
+  if (S.pruned) return; S.pruned = true;
+  const d = new Date(); d.setDate(d.getDate() - 30);
+  const cutoff = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  try {
+    const old = await S.db.collection("orders").where("member", "==", S.me).where("date", "<", cutoff).limit(50).get();
+    for (const doc of old.docs) await S.db.doc("orders/" + doc.id).delete();
+  } catch {}
+}
+
+/* ---------- boot ---------- */
+renderAll();
+(async () => {
+  let db = null;
+  try {
+    if (!window.firebase || !window.FIREBASE_CONFIG || !FIREBASE_CONFIG.projectId || FIREBASE_CONFIG.projectId.startsWith("YOUR_")) throw new Error("Firebase not configured");
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  } catch (err) { console.error(err); }
+  if (!db) { $("offline").hidden = false; S.ready = true; S.readOnly = true; renderAll(); return; }
+  S.db = db;
+
+  let gotTeam = false, gotOrders = false;
+  const maybeReady = () => {
+    if (gotTeam && gotOrders && !S.ready) { S.ready = true; loadDraftFromSaved(); }
+    if (S.ready && !S.dirty && !S.switching && document.activeElement?.id !== "note") {
+      // refresh the form from the latest saved state when the person isn't mid-edit
+      loadDraftFromSaved();
+      renderAll();
+    } else if (S.ready) { renderHeader(); renderList(); renderTeam(); }
+  };
+  db.collection("team").orderBy("name").onSnapshot(snap => {
+    S.team = snap.docs.map(d => ({ id: d.id, ...d.data() })); gotTeam = true; maybeReady();
+  }, () => { gotTeam = true; maybeReady(); });
+  db.collection("orders").where("date", "==", S.date).onSnapshot(snap => {
+    S.orders = snap.docs.map(d => ({ id: d.id, ...d.data() })); gotOrders = true; maybeReady();
+  }, () => { gotOrders = true; maybeReady(); });
+  db.collection("calls").where("date", "==", S.date).onSnapshot(snap => {
+    S.calls = {}; for (const d of snap.docs) { const v = d.data(); S.calls[v.round] = v; }
+    if (S.ready) renderAll();
+  });
+  db.doc("settings/whatsapp").onSnapshot(doc => {
+    const v = doc && doc.exists ? doc.data() : null;
+    S.waNumber = (v && String(v.number || "").replace(/\D/g, "")) || "";
+    S.waGroup = (v && String(v.group || "").replace(/[^A-Za-z0-9]/g, "")) || "";
+    if (document.activeElement?.id !== "wa-num") $("wa-num").value = S.waNumber;
+    if (document.activeElement?.id !== "wa-group") $("wa-group").value = S.waGroup ? "https://chat.whatsapp.com/" + S.waGroup : "";
+    if (S.ready) renderList();
+  }, () => {});
+  if (!ls.get("pantry.me")) $("team-details").open = true;
+})();
+
+// A page left open overnight rolls over to the new day.
+document.addEventListener("visibilitychange", () => { if (!document.hidden && todayKey() !== S.date) location.reload(); });
+</script>
+
+
+</body></html>
